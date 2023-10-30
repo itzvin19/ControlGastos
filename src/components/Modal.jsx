@@ -1,28 +1,40 @@
 import CerrarBtn from "../img/cerrar.svg";
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import Mensaje from "./Mensaje";
 
-const Modal = ({ setModal, animarModal, setAnimarModal,agregarGastos }) => {
-
-  const [nombre, setNombre ] = useState("");
-  const [cantidad, setCantidad ] = useState("");
-  const [categoria, setCategoria ] = useState("");
-  const [mensaje, setMensaje]= useState("")
+const Modal = ({
+  setModal,
+  animarModal,
+  setAnimarModal,
+  agregarGastos,
+  gastoEditar
+}) => {
+  const [nombre, setNombre] = useState("");
+  const [cantidad, setCantidad] = useState(0);
+  const [categoria, setCategoria] = useState("");
+  const [mensaje, setMensaje] = useState("");
 
   const ocultarModal = () => {
     setModal(false);
     setAnimarModal(false);
   };
 
+  useEffect(()=>{
+    if(Object.keys(gastoEditar).length>0){
+      setNombre(gastoEditar.nombre)
+      setCantidad(gastoEditar.cantidad)
+      setCategoria(gastoEditar.categoria)
+    }
+  },[])
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if ([nombre, cantidad, categoria].includes("")) {
-        setMensaje("Debe de  llenar todos los campos")
-        return;
+      setMensaje("Debe de  llenar todos los campos");
+      return;
     }
-    agregarGastos({nombre,cantidad,categoria})
+    agregarGastos({ nombre, cantidad, categoria });
   };
-
 
   return (
     <div className="modal">
@@ -42,6 +54,7 @@ const Modal = ({ setModal, animarModal, setAnimarModal,agregarGastos }) => {
             type="text"
             placeholder="Añade el Nombre de Gasto"
             id="nombre"
+            value={nombre}
             onChange={(e) => setNombre(e.target.value)}
           />
         </div>
@@ -51,17 +64,18 @@ const Modal = ({ setModal, animarModal, setAnimarModal,agregarGastos }) => {
             type="number"
             placeholder="Añade la cantidad de Gasto: ej. 300"
             id="cantidad"
-            onChange={(e) => setCantidad(e.target.value)}
+            value={cantidad}
+            onChange={(e) => setCantidad(Number(e.target.value))}
           />
         </div>
         <div className="campo">
           <label htmlFor="categoria">Categoria</label>
-          <select id="categoria" onChange={(e) => setCategoria(e.target.value)}>
+          <select id="categoria" onChange={(e) => setCategoria(e.target.value)} value={categoria}>
             <option value="">-- Seleccione --</option>
             <option value="ahorro">Ahorro</option>
             <option value="comida">Comida</option>
             <option value="casa">Casa</option>
-            <option value="gastos">Gastor Varios</option>
+            <option value="gastos">Gastos Varios</option>
             <option value="ocio">Ocio</option>
             <option value="salud">Salud</option>
             <option value="suscripciones">Suscripciones</option>
