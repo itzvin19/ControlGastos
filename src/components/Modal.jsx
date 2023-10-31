@@ -7,16 +7,20 @@ const Modal = ({
   animarModal,
   setAnimarModal,
   agregarGastos,
-  gastoEditar
+  gastoEditar,
+  setGastoEditar
 }) => {
   const [nombre, setNombre] = useState("");
   const [cantidad, setCantidad] = useState(0);
   const [categoria, setCategoria] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [id, setId] = useState("");
+  const [fecha,setFecha]=useState("")
 
   const ocultarModal = () => {
     setModal(false);
     setAnimarModal(false);
+    setGastoEditar({})
   };
 
   useEffect(()=>{
@@ -24,6 +28,8 @@ const Modal = ({
       setNombre(gastoEditar.nombre)
       setCantidad(gastoEditar.cantidad)
       setCategoria(gastoEditar.categoria)
+      setId(gastoEditar.id)
+      setFecha(gastoEditar.fecha)
     }
   },[])
 
@@ -33,7 +39,7 @@ const Modal = ({
       setMensaje("Debe de  llenar todos los campos");
       return;
     }
-    agregarGastos({ nombre, cantidad, categoria });
+    agregarGastos({ nombre, cantidad, categoria,id ,fecha});
   };
 
   return (
@@ -46,7 +52,7 @@ const Modal = ({
         className={`formulario ${animarModal ? "animar" : "cerrar"}`}
         onSubmit={(e) => handleSubmit(e)}
       >
-        <legend>Nuevo Gasto</legend>
+        <legend>{gastoEditar.id?'Editar Gasto':'Nuevo Gasto'}</legend>
         {mensaje && <Mensaje tipo="error">{mensaje}</Mensaje>}
         <div className="campo">
           <label htmlFor="nombre">Nombre Gasto</label>
@@ -81,7 +87,7 @@ const Modal = ({
             <option value="suscripciones">Suscripciones</option>
           </select>
         </div>
-        <input type="submit" value="Añadir Gasto" />
+        <input type="submit" value={gastoEditar.id?'Guardar Cambios':'Añadir Gasto'} />
       </form>
     </div>
   );

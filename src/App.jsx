@@ -1,18 +1,25 @@
 import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
+import Filtro from "./components/Filtro";
 import { generarId } from "./helpers";
 import IconoNuevoGasto from "./img/nuevo-gasto.svg";
 import ListadoGastos from "./components/ListadoGastos";
 
 function App() {
-  const [presupuesto, setPresupuesto] = useState(0);
+  const [presupuesto, setPresupuesto] = useState(
+    Number(localStorage.getItem("presupuesto")) ?? 0
+  );
   const [isValidPresupuesto, setIsValidPresupuesto] = useState(false);
   const [modal, setModal] = useState(false);
   const [animarModal, setAnimarModal] = useState(false);
 
-  const [gastos, setGastos] = useState([]);
+  const [gastos, setGastos] = useState(
+    JSON.parse(localStorage.getItem("gastos")) ?? []
+  );
   const [gastoEditar, setGastoEditar] = useState({});
+  const [filtro, setFiltro] = useState("");
+  const [gastosFiltrados,setGastosFiltrados]=useState("")
 
   useEffect(() => {
     if (Object.keys(gastoEditar).length > 0) {
@@ -28,14 +35,50 @@ function App() {
   };
 
   const agregarGastos = (gasto) => {
-    gasto.id = generarId();
-    gasto.fecha = Date.now();
-    setGastos([...gastos, gasto]);
+    if (gasto.id) {
+      const gastosActualizados = gastos.map((gastoState) =>
+        gastoState.id === gastoEditar.id ? gasto : gastoState
+      );
+      setGastos(gastosActualizados);
+      setGastoEditar({});
+    } else {
+      gasto.id = generarId();
+      gasto.fecha = Date.now();
+      setGastos([...gastos, gasto]);
+    }
+
     setModal(false);
     setTimeout(() => {
       setAnimarModal(false);
     }, 100);
-  }; 
+  };
+
+  const eliminarGasto = (id) => {
+    const gastosActualizados = gastos.filter((e) => e.id !== id);
+    setGastos(gastosActualizados);
+  };
+
+  useEffect(() => {
+    localStorage.setItem("presupuesto", presupuesto ?? 0);
+  }, [presupuesto]);
+
+  useEffect(() => {
+    const presupuestoLS = Number(localStorage.getItem("presupuesto") ?? 0);
+    if (presupuestoLS > 0) {
+      setIsValidPresupuesto(true);
+    }
+  }, []);
+
+  useEffect(()=>{
+    if (filtro){
+      const gastosFiltrados=gastos.filter(gasto=>gasto.categoria===filtro)
+      setGastosFiltrados(gastosFiltrados)
+    }
+  },[filtro])
+
+  useEffect(() => {
+    localStorage.setItem("gastos", JSON.stringify(gastos));
+  }, [gastos]);
 
   return (
     <div className={modal ? "fijar" : ""}>
@@ -49,7 +92,9 @@ function App() {
       {isValidPresupuesto && (
         <>
           <main>
+            <Filtro setFiltro={setFiltro} filtro={filtro} />
             <ListadoGastos
+              eliminarGasto={eliminarGasto}
               setGastoEditar={setGastoEditar}
               gastos={gastos}
             ></ListadoGastos>
@@ -58,7 +103,10 @@ function App() {
             <img
               src={IconoNuevoGasto}
               alt="Icono de Nuevo Gasto"
-              onClick={()=>{handleNuevoGasto(); setGastoEditar({})}}
+              onClick={() => {
+                handleNuevoGasto();
+                setGastoEditar({});
+              }}
             />
           </div>
         </>
@@ -66,6 +114,7 @@ function App() {
 
       {modal && (
         <Modal
+          setGastoEditar={setGastoEditar}
           gastoEditar={gastoEditar}
           agregarGastos={agregarGastos}
           setModal={setModal}
